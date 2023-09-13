@@ -26,7 +26,6 @@ fun printMenu() {
 }
 
 fun changeNumber() {
-
     val reader = Scanner(System.`in`)
 
     print("Input the first number: ")
