@@ -1,38 +1,126 @@
-class Taxi(val taxiNumber: String, val baseFare: Double, val perKilometerRate: Double) {
-    private var isBooked: Boolean = false
+import java.util.*
+
+data class Taxi(val taxiNumber: String, val baseFare: Double, val perKilometerRate: Double, val quota: Double) {
+    var isBooked: Boolean = false
+
+    operator fun plus(otherTaxi: Taxi): Double {
+        return this.quota + otherTaxi.quota
+    }
 
     operator fun invoke() {
         if (!isBooked) {
-            println("Taxi $taxiNumber has been booked.")
+            println("\nTaxi $taxiNumber has been booked in Baguio City.\n")
             isBooked = true
         } else {
-            println("Taxi $taxiNumber is already booked.")
+            println("\nTaxi $taxiNumber is already booked.\n")
         }
     }
 
-    // Calculate the fare
+
     inline fun calculateFare(distance: Double, fareCalculator: (Double) -> Double): Double {
         return fareCalculator(distance)
     }
 }
 
-fun main() {
-    val taxi1 = Taxi("T123", 40.0, 13.0) //crt obj of taxi1
-    val taxi2 = Taxi("T456", 40.0, 15.0) //crt obj of taxi2
 
-    taxi1() // Book taxi1
-    taxi2() // Book taxi2
+val taxis = mutableListOf<Taxi>()
 
-    val distanceInKilometers = 7.5 //test
-
-    val fare1 = taxi1.calculateFare(distanceInKilometers) { distance ->
-        taxi1.baseFare + (distance * taxi1.perKilometerRate)
-    }
-
-    val fare2 = taxi2.calculateFare(distanceInKilometers) { distance ->
-        taxi2.baseFare + (distance * taxi2.perKilometerRate)
-    }
-
-    println("Taxi Fare for $distanceInKilometers kilometers for Taxi ${taxi1.taxiNumber}: ₱$fare1")
-    println("Taxi Fare for $distanceInKilometers kilometers for Taxi ${taxi2.taxiNumber}: ₱$fare2")
+fun printMenuUser() {
+    println("\nBaguio City Taxi Booking System")
+    println("Welcome to the City of Pines!\n\n\n")
+    println("1. Book a taxi")
+    println("2. Get the total spent amount on taxi fares")
+    println()
+    getUserChoice()
 }
+
+fun getUserChoice() {
+    val kbd = Scanner(System.`in`)
+    println("Enter choice: ")
+    val choice = kbd.nextInt()
+
+    when (choice) {
+        1 -> bookTaxi()
+        2 -> getTotalQuota()
+        3 -> printMenuUser()
+        else -> println("Invalid choice")
+    }
+}
+
+fun loginUser() {
+    val taxi1 = Taxi("T123", 40.0, 13.0, 100.00)
+    val taxi2 = Taxi("T456", 40.0, 15.0, 550.00)
+
+    taxis.addAll(listOf(taxi1, taxi2))
+
+    val credentials = mapOf(
+        "" to "",
+        "admin" to "admin"
+    )
+
+    val kbd = Scanner(System.`in`)
+    println("Username: ")
+    val user = kbd.nextLine()
+    println("Password: ")
+    val pass = kbd.nextLine()
+
+    when {
+        credentials[user] == pass -> {
+            println("LOGGED IN\n")
+            when (user) {
+                "" -> printMenuUser()
+            }
+        }
+
+        else -> println("INVALID CREDENTIALS")
+    }
+}
+
+fun bookTaxi() {
+    println("\nAvailable Taxis in Baguio City: ")
+    taxis.forEachIndexed { index, taxi ->
+        println("${index + 1}. Taxi ${taxi.taxiNumber}")
+    }
+
+    val kbd = Scanner(System.`in`)
+    print("Choose a taxi (1-${taxis.size}): ")
+    val choice = kbd.nextInt()
+
+    val selectedTaxi = taxis.getOrNull(choice - 1)
+
+    if (selectedTaxi != null && !selectedTaxi.isBooked) {
+        selectedTaxi()
+        println("\nKilometers to your destination: ")
+        val distanceInKilometers = kbd.nextDouble()
+
+        val fare = selectedTaxi.calculateFare(distanceInKilometers) { distance ->
+            selectedTaxi.baseFare + (distance * selectedTaxi.perKilometerRate)
+        }
+        println("\nTaxi Fare for $distanceInKilometers kilometers for Taxi ${selectedTaxi.taxiNumber}: ₱$fare")
+
+        println("Press enter to continue")
+        kbd.nextLine()
+        kbd.nextLine()
+    } else {
+        println("Invalid choice or taxi already booked.")
+    }
+
+    printMenuUser()
+}
+
+fun getTotalQuota() {
+    val totalQuota = taxis[0] + taxis[1]
+    println("\nTotal Quota for all taxis: $totalQuota")
+
+    printMenuUser()
+}
+
+
+fun main() {
+    loginUser()
+}
+
+
+
+
+
